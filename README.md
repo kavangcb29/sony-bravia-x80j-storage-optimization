@@ -90,9 +90,31 @@ Force-stopped, cleared, and disabled for `user 0` (all reversible via `adb shell
 ### D. Unused App Audit & Cleanup
 Audited via `dumpsys usagestats` (`AppStandby` buckets) and removed 6 unused 3rd-party apps (`com.finalwire.aida64`, `com.graymatrix.did`, `com.crunchyroll.crunchyroid`, `com.eros.now`, `com.balaji.alt`, `com.rkgames.basisgame`).
 
+### E. System-Wide Ad Blocking (Private DNS)
+Enabled Android 12's native DNS-over-TLS ad blocking using AdGuard DNS (blocks ad networks and tracking domains across apps without a VPN):
+```bash
+adb shell settings put global private_dns_mode hostname
+adb shell settings put global private_dns_specifier dns.adguard-dns.com
+```
+*(Rollback: `adb shell settings put global private_dns_mode off`)*
+
+### F. Ad-Free YouTube via SmartTube *(Keeping Official YouTube for Casting)*
+DNS blocking cannot strip video ads inside the official YouTube TV app (`com.google.android.youtube.tv`). Instead of removing official YouTube (which is still useful for casting from phones), **SmartTube** (`org.smarttube.stable`) was installed directly onto the adopted USB drive using the `armeabi-v7a` build (Sony Bravia VH2 runs a 32-bit `armeabi-v7a` Android userland):
+```bash
+adb install --force-uuid <VOLUME_UUID> SmartTube_stable_armeabi-v7a.apk
+```
+
 ---
 
-## 5. Included Scripts
+## 5. Credits & Useful Links
+
+* **SmartTube (Ad-Free Open-Source YouTube Client for Android TV):** Huge thanks to **[yuliskov/SmartTube](https://github.com/yuliskov/SmartTube)** for providing an open-source, ad-free, SponsorBlock-enabled YouTube client for Android TV.
+  * Download official releases directly here: **[SmartTube Releases on GitHub](https://github.com/yuliskov/SmartTube/releases)** *(use the `armeabi-v7a` APK for Sony Bravia X80J)*.
+* **AdGuard DNS:** System-wide DNS-over-TLS ad/tracker filtering (`dns.adguard-dns.com`).
+
+---
+
+## 6. Included Scripts
 
 All scripts are in [`scripts/`](scripts/) and take `--ip <TV_IP_ADDRESS>`:
 
@@ -103,7 +125,7 @@ All scripts are in [`scripts/`](scripts/) and take `--ip <TV_IP_ADDRESS>`:
 
 ---
 
-## 6. Further Hardware & UI Tips
+## 7. Further Hardware & UI Tips
 
 * **Small USB SSD vs. USB Flash Drive vs. HDD:** A low-power **SATA SSD in a USB 3.0 UASP enclosure** (or Samsung T5/T7) is significantly faster and longer-lasting than standard USB flash drives due to much higher 4K random IOPS and wear leveling. Avoid spinning mechanical HDDs for adoptable storage (high latency + USB power draw issues).
 * **Apps-Only Mode / Projectivy Launcher:** Enabling **Apps-only mode** (`Settings → Accounts & Sign-in → [Account] → Apps-only mode`) or switching to **Projectivy Launcher** eliminates Google TV's heavy trailer/recommendation feeds (`~135 MB` RAM).

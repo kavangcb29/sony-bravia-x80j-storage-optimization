@@ -35,7 +35,8 @@ def main():
     parser.add_argument("--ip", required=True, help="Local IP address of the TV (e.g. 192.168.1.50)")
     parser.add_argument("--port", default="5555", help="ADB port (default: 5555)")
     parser.add_argument("--scale", default="0.75", help="UI animation scale (default: 0.75)")
-    parser.add_argument("--enable", action="store_true", help="Rollback: re-enable bloat packages and reset scale to 1.0")
+    parser.add_argument("--adguard-dns", action="store_true", help="Enable AdGuard Private DNS (dns.adguard-dns.com)")
+    parser.add_argument("--enable", action="store_true", help="Rollback: re-enable bloat packages, reset scale to 1.0, and turn off Private DNS")
     args = parser.parse_args()
 
     subprocess.run(["adb", "connect", f"{args.ip}:{args.port}"], check=True)
@@ -46,10 +47,15 @@ def main():
     print(f"Animation scales set to {scale}x")
 
     if args.enable:
+        adb_shell(["settings", "put", "global", "private_dns_mode", "off"])
         for pkg in BLOAT_PACKAGES:
             r = adb_shell(["pm", "enable", pkg])
             print(f"ENABLE {pkg}: {r.stdout.strip()} {r.stderr.strip()}")
     else:
+        if args.adguard_dns:
+            adb_shell(["settings", "put", "global", "private_dns_mode", "hostname"])
+            adb_shell(["settings", "put", "global", "private_dns_specifier", "dns.adguard-dns.com"])
+            print("Enabled Private DNS: dns.adguard-dns.com")
         trim_res = adb_shell(["pm", "trim-caches", "999999999999"])
         print("Trimmed app caches:", trim_res.returncode)
         for pkg in BLOAT_PACKAGES:
